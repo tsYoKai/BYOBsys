@@ -11,5 +11,10 @@ public class Main {
         ContaBancaria cb= new ContaBancaria();
         cb.setSaldo(0);
         System.out.println(cb.getSaldo());
+
+
+        Calculadora calc = new Calculadora();
+        calc.somar(5, 17);
+        int res = calc.multiplicar(5, 6);
     }
 }
