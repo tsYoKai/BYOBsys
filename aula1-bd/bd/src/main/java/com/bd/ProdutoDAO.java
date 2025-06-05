@@ -25,7 +25,7 @@ public class ProdutoDAO {
         stmt.execute();
         stmt.close();
     }
-
+/*
     public void insert(Produto produto) throws SQLException {
         String sql = "INSERT INTO produto (id_prod, nome, preco) VALUES (?, ?, ?)";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -45,7 +45,7 @@ public class ProdutoDAO {
         stmt.execute();
         stmt.close();
     }
- 
+ */
     public void delete(int idProd) throws SQLException {
         String sql = "DELETE FROM produto WHERE id_prod=?";
         PreparedStatement stmt = connection.prepareStatement(sql);
