@@ -25,7 +25,7 @@ public class ProdutoDAO {
         stmt.execute();
         stmt.close();
     }
-
+/*
     public void insert(Produto produto) throws SQLException {
         String sql = "INSERT INTO produto (id_prod, nome, preco) VALUES (?, ?, ?)";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -45,7 +45,7 @@ public class ProdutoDAO {
         stmt.execute();
         stmt.close();
     }
- 
+ */
     public void delete(int idProd) throws SQLException {
         String sql = "DELETE FROM produto WHERE id_prod=?";
         PreparedStatement stmt = connection.prepareStatement(sql);
@@ -64,8 +64,8 @@ public class ProdutoDAO {
         if (rs.next()) {
             produto = new Produto(
                 rs.getInt("id_prod"),
-                rs.getString("nome"),
-                rs.getDouble("preco")
+                rs.getString("prod_nome"),
+                rs.getDouble("prod_preco")
             );
         }
         rs.close();
@@ -82,8 +82,8 @@ public class ProdutoDAO {
         while (rs.next()) {
             Produto produto = new Produto(
                 rs.getInt("id_prod"),
-                rs.getString("nome"),
-                rs.getDouble("preco")
+                rs.getString("prod_nome"),
+                rs.getDouble("prod_preco")
             );
             produtos.add(produto);
         }
@@ -92,4 +92,29 @@ public class ProdutoDAO {
         stmt.close();
         return produtos;
     }
+/*
+    public Produto buscarPorId(int idProduto) {
+        Produto produto = null;
+        String sql = "SELECT id, nome, preco, descricao FROM produtos WHERE id = ?"; // Ajuste os nomes das colunas conforme seu BD
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idProduto); // Define o valor do parâmetro 'id' na query
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Se houver um resultado, preenche o objeto Produto
+                    produto = new Produto();
+                    produto.setId(rs.getInt("id"));
+                    produto.setNome(rs.getString("nome"));
+                    produto.setPreco(rs.getDouble("preco")); // Ou float, dependendo do seu tipo de dado
+                    produto.setDescricao(rs.getString("descricao"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar produto por ID: " + e.getMessage());
+            // Você pode adicionar um log ou relançar uma exceção personalizada aqui
+        }
+        return produto;
+    }*/
+    
 }
