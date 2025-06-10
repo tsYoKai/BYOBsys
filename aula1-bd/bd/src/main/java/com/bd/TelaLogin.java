@@ -1,65 +1,114 @@
 package com.bd;
 
 import javax.swing.*;
-
-
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter; 
+import java.awt.event.WindowEvent;  
+import java.sql.Connection;     
+import java.sql.SQLException;    
 
 public class TelaLogin extends JFrame {
+  
+  private JTextField campoNome;
+  private JPasswordField campoID;
+  private JButton botaoLogin;
+  private Connection connection; 
+  private Operador operadorLogado; // ADICIONADO: Variável para armazenar o operador autenticado
 
-    private JTextField campoNome;
-    private JPasswordField campoID;
-    private JButton botaoLogin;
+  public TelaLogin() {
+    setTitle("Login do Operador");
+    setSize(300, 200);
+    setLocationRelativeTo(null);
+    setDefaultCloseOperation(EXIT_ON_CLOSE); 
+    setLayout(new GridLayout(3, 2, 5, 5));
 
-    public TelaLogin() {
-        setTitle("Login do Operador");
-        setSize(300, 200);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new GridLayout(3, 2, 5, 5));
+    JLabel labelNome = new JLabel("Nome:");
+    campoNome = new JTextField();
 
-        JLabel labelNome = new JLabel("Nome:");
-        campoNome = new JTextField();
+    JLabel labelID = new JLabel("ID:");
+    campoID = new JPasswordField();
 
-        JLabel labelID = new JLabel("ID:");
-        campoID = new JPasswordField();
+    botaoLogin = new JButton("Entrar");
 
-        botaoLogin = new JButton("Entrar");
+    add(labelNome);
+    add(campoNome);
+    add(labelID);
+    add(campoID);
+    add(new JLabel()); 
+    add(botaoLogin);
 
-        add(labelNome);
-        add(campoNome);
-        add(labelID);
-        add(campoID);
-        add(new JLabel()); // espaço vazio
-        add(botaoLogin);
+    botaoLogin.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        String nome = campoNome.getText();
+        String idTXT = new String(campoID.getPassword());
+        int id;
 
-        botaoLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String nome = campoNome.getText();
-                //Transformando senha ((char[])) em int, ______ SERÁ SÓ O ID no campo senha
-                char[] charID =campoID.getPassword();
-                String idTXT = new String(charID);
-                int id = Integer.parseInt(idTXT);
-                //-----------------------------------------------
-                Operador operador = new Operador(id, nome);
-                OperadorDAO dao = new OperadorDAO();
+        try {
+          id = Integer.parseInt(idTXT);
+        } catch (NumberFormatException ex) {
+          JOptionPane.showMessageDialog(TelaLogin.this, "O ID deve ser um número válido.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
+          return; 
+        }
 
-                if (dao.logar(operador)) {
-                    JOptionPane.showMessageDialog(null, "Login bem-sucedido!");
+        
+        try {
+          connection = ConnectionFactory.getConnection(); 
+          if (connection == null || connection.isClosed()) {
+            JOptionPane.showMessageDialog(TelaLogin.this, "Falha ao obter conexão com o banco de dados.", "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+            return; 
+          }
 
-                    dispose(); // Fecha a tela de login
-                    // Aqui poderia abrir nova janela ou dashboard
-                    new TelaUsuarios();
-                } else {
-                    JOptionPane.showMessageDialog(null, "RA ou senha inválidos.");
-                }
-            }
-        });
+          OperadorDAO operadorDAO = new OperadorDAO(connection);
+          Operador operadorParaLogin = new Operador(id, nome); 
+          
+                    // AQUI está a MUDANÇA:
+                    // Você já está chamando operadorDAO.logar e armazenando o resultado em operadorAutenticado.
+                    // Não precisa chamar ele de novo no 'if' como se esperasse um boolean.
+                    // Apenas verifique se operadorAutenticado não é nulo.
+          Operador operadorAutenticado = operadorDAO.logar(operadorParaLogin); 
 
-        setVisible(true);
+          // MUDANÇA AQUI: Altere a condição do 'if'
+          if (operadorAutenticado != null) { // Se logar retornou um objeto Operador (não nulo), login bem-sucedido
+            JOptionPane.showMessageDialog(TelaLogin.this, "Login bem-sucedido!");
+
+            dispose(); 
+            // MUDANÇA CRUCIAL AQUI: Passe o 'operadorAutenticado' para a TelaVenda
+            new TelaVenda(connection, operadorAutenticado); // Passando o operador autenticado
+
+          } else {
+            JOptionPane.showMessageDialog(TelaLogin.this, "Nome de usuário ou ID inválidos.", "Erro de Login", JOptionPane.ERROR_MESSAGE);
+            ConnectionFactory.closeConnection(connection);
+            connection = null; 
+          }
+
+        } catch (SQLException ex) {
+          JOptionPane.showMessageDialog(TelaLogin.this, "Erro de banco de dados durante o login: " + ex.getMessage(), "Erro de SQL", JOptionPane.ERROR_MESSAGE);
+          ex.printStackTrace();
+          ConnectionFactory.closeConnection(connection);
+          connection = null;
+        }
+      }
+    });
+
+    addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        ConnectionFactory.closeConnection(connection);
+      }
+    });
+
+    setVisible(true);
+  }
+
+  public static void main(String[] args) {
+    try {
+      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+    } catch (Exception ignored) {
     }
+
+    SwingUtilities.invokeLater(TelaLogin::new);
+  }
 }

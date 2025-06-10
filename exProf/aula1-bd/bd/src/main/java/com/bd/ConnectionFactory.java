@@ -8,7 +8,7 @@ public class ConnectionFactory {
      private static String url =
  "jdbc:mysql://localhost:3306/universidade?useTimezone=true&server=UTC";
   private static String usuario = "root";
-  private static String senha = "Belchior*14142418";   
+  private static String senha = "usjt";   
   
   public static Connection getConnection(){
       try{

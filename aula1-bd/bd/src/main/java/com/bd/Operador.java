@@ -3,7 +3,9 @@ package com.bd;
 public class Operador {
     private int idOp;
     private String nome;
- 
+    public Operador(){
+        
+    }
     public Operador(int idOp, String nome) {
         this.idOp = idOp;
         this.nome = nome;

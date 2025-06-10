@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class ConnectionFactory {
      private static String url =
- "jdbc:mysql://localhost:3306/BYOBsys?useTimezone=true&server=UTC";
+ "jdbc:mysql://localhost:3306/byobbd?useTimezone=true&server=UTC";
   private static String usuario = "root";
   private static String senha = "usjt";   
   
@@ -20,4 +20,16 @@ public class ConnectionFactory {
           return null;
       }
   }
+
+  public static void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                System.err.println("Erro ao fechar a conexão: " + e.getMessage());
+                // Em um ambiente de produção, você faria um log mais robusto aqui
+            }
+        }
+    }
+
 }
