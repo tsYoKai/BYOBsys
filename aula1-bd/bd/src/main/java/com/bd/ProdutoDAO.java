@@ -11,110 +11,97 @@ public class ProdutoDAO {
     public ProdutoDAO(Connection connection) {
         this.connection = connection;
     }
+
+    // Método save unificado para inserção e atualização
     public void save(Produto produto, boolean atualizacao) throws SQLException {
         String sql;
-        if (atualizacao){
-             sql = "UPDATE produto SET nome=?, preco=? WHERE id_prod=?";
-        }else{
-             sql = "INSERT INTO produto (id_prod, nome, preco) VALUES (?, ?, ?)";
+        PreparedStatement stmt = null; // Inicialize stmt fora do try-with-resources se for usar no finally
+        try {
+            if (atualizacao){
+                sql = "UPDATE produto SET prod_nome = ?, prod_preco = ? WHERE id_prod = ?";
+                stmt = connection.prepareStatement(sql);
+                stmt.setString(1, produto.getNome());
+                stmt.setDouble(2, produto.getPreco());
+                stmt.setInt(3, produto.getIdProd()); // ID é o último parâmetro para UPDATE
+            } else {
+                sql = "INSERT INTO produto (id_prod, prod_nome, prod_preco) VALUES (?, ?, ?)";
+                stmt = connection.prepareStatement(sql);
+                stmt.setInt(1, produto.getIdProd());
+                stmt.setString(2, produto.getNome());
+                stmt.setDouble(3, produto.getPreco());
+            }
+            stmt.executeUpdate(); // Use executeUpdate para INSERT, UPDATE, DELETE
+        } finally { // Use finally para garantir que o stmt seja fechado
+            if (stmt != null) {
+                stmt.close();
+            }
         }
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setInt(1, produto.getIdProd());
-        stmt.setString(2, produto.getNome());
-        stmt.setDouble(3, produto.getPreco());
-        stmt.execute();
-        stmt.close();
     }
-/*
+
+    // --- Métodos de CRUD individuais (descomente ou mantenha o save) ---
+    /*
     public void insert(Produto produto) throws SQLException {
-        String sql = "INSERT INTO produto (id_prod, nome, preco) VALUES (?, ?, ?)";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setInt(1, produto.getIdProd());
-        stmt.setString(2, produto.getNome());
-        stmt.setDouble(3, produto.getPreco());
-        stmt.execute();
-        stmt.close();
-    }
- 
-    public void update(Produto produto) throws SQLException {
-        String sql = "UPDATE produto SET nome=?, preco=? WHERE id_prod=?";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setString(1, produto.getNome());
-        stmt.setDouble(2, produto.getPreco());
-        stmt.setInt(3, produto.getIdProd());
-        stmt.execute();
-        stmt.close();
-    }
- */
-    public void delete(int idProd) throws SQLException {
-        String sql = "DELETE FROM produto WHERE id_prod=?";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setInt(1, idProd);
-        stmt.execute();
-        stmt.close();
-    }
- 
-    public Produto getById(int idProd) throws SQLException {
-        String sql = "SELECT * FROM produto WHERE id_prod=?";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setInt(1, idProd);
-        ResultSet rs = stmt.executeQuery();
- 
-        Produto produto = null;
-        if (rs.next()) {
-            produto = new Produto(
-                rs.getInt("id_prod"),
-                rs.getString("prod_nome"),
-                rs.getDouble("prod_preco")
-            );
+        String sql = "INSERT INTO produto (id_prod, prod_nome, prod_preco) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, produto.getIdProd());
+            stmt.setString(2, produto.getNome());
+            stmt.setDouble(3, produto.getPreco());
+            stmt.executeUpdate();
         }
-        rs.close();
-        stmt.close();
-        return produto;
+    }
+
+    public void update(Produto produto) throws SQLException {
+        String sql = "UPDATE produto SET prod_nome = ?, prod_preco = ? WHERE id_prod = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, produto.getNome());
+            stmt.setDouble(2, produto.getPreco());
+            stmt.setInt(3, produto.getIdProd());
+            stmt.executeUpdate();
+        }
+    }
+    */
+ 
+    public boolean delete(int idProd) throws SQLException { // Mudei para boolean para indicar sucesso
+        String sql = "DELETE FROM produto WHERE id_prod=?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idProd);
+            int affectedRows = stmt.executeUpdate(); // Use executeUpdate() para DELETE
+            return affectedRows > 0; // Retorna true se alguma linha foi afetada
+        }
+    }
+ 
+    // --- MÉTODO getById CORRIGIDO ---
+    public Produto getById(int idProd) throws SQLException {
+        String sql = "SELECT id_prod, prod_nome, prod_preco FROM produto WHERE id_prod = ?"; // Colunas corretas
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idProd); // <<< Definir o parâmetro ANTES de executar a query
+            try (ResultSet rs = stmt.executeQuery()) { // <<< Executar a query AQUI
+                if (rs.next()) {
+                    return new Produto(
+                        rs.getInt("id_prod"),
+                        rs.getString("prod_nome"), // Coluna correta
+                        rs.getDouble("prod_preco") // Coluna correta
+                    );
+                }
+            }
+        }
+        return null;
     }
  
     public List<Produto> getAll() throws SQLException {
         List<Produto> produtos = new ArrayList<>();
-        String sql = "SELECT * FROM produto";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
- 
-        while (rs.next()) {
-            Produto produto = new Produto(
-                rs.getInt("id_prod"),
-                rs.getString("prod_nome"),
-                rs.getDouble("prod_preco")
-            );
-            produtos.add(produto);
+        String sql = "SELECT id_prod, prod_nome, prod_preco FROM produto"; // Colunas corretas
+        try (Statement stmt = connection.createStatement(); // Use Statement para queries sem parâmetros
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Produto produto = new Produto(
+                    rs.getInt("id_prod"),
+                    rs.getString("prod_nome"), // Coluna correta
+                    rs.getDouble("prod_preco") // Coluna correta
+                );
+                produtos.add(produto);
+            }
         }
- 
-        rs.close();
-        stmt.close();
         return produtos;
     }
-/*
-    public Produto buscarPorId(int idProduto) {
-        Produto produto = null;
-        String sql = "SELECT id, nome, preco, descricao FROM produtos WHERE id = ?"; // Ajuste os nomes das colunas conforme seu BD
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idProduto); // Define o valor do parâmetro 'id' na query
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    // Se houver um resultado, preenche o objeto Produto
-                    produto = new Produto();
-                    produto.setId(rs.getInt("id"));
-                    produto.setNome(rs.getString("nome"));
-                    produto.setPreco(rs.getDouble("preco")); // Ou float, dependendo do seu tipo de dado
-                    produto.setDescricao(rs.getString("descricao"));
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Erro ao buscar produto por ID: " + e.getMessage());
-            // Você pode adicionar um log ou relançar uma exceção personalizada aqui
-        }
-        return produto;
-    }*/
-    
 }

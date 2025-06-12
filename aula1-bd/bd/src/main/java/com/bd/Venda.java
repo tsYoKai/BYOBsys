@@ -3,25 +3,33 @@ package com.bd;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Representa uma Venda no sistema, com seus itens.
- */
 public class Venda {
     private int idVenda;
-    private String cpf; // CPF do cliente (pode ser null)
-    private Operador operador; // Operador que registrou a venda
-    private List<Item> itens; // Lista de itens da venda
+    private String cpf;
+    private Operador operador;
+    private List<Item> itens; // A lista de itens da venda
 
+    // --- Construtor Padrão (Sem Parâmetros) ---
+    // Essencial para quando você cria um objeto Venda sem o ID do banco ainda (ex: nova venda)
     public Venda() {
-        this.itens = new ArrayList<>();
+        this.itens = new ArrayList<>(); // <-- MUITO IMPORTANTE: Inicialize a lista aqui!
     }
 
+    // --- Construtor para Nova Venda (com CPF e Operador, ID será gerado) ---
     public Venda(String cpf, Operador operador) {
+        this(); // <-- Chama o construtor padrão para garantir que 'itens' seja inicializado
         this.cpf = cpf;
         this.operador = operador;
-        this.itens = new ArrayList<>();
     }
 
+    // --- Construtor para Vendas Existentes (com ID do banco) ---
+    // Usado ao buscar vendas do banco de dados
+    public Venda(int idVenda, String cpf, Operador operador) {
+        this(cpf, operador); // <-- Chama o construtor acima para inicializar 'itens' e setar cpf/operador
+        this.idVenda = idVenda; // Seta o ID da venda
+    }
+
+    // --- Métodos Getters e Setters ---
     public int getIdVenda() {
         return idVenda;
     }
@@ -50,30 +58,24 @@ public class Venda {
         return itens;
     }
 
-    public void setItens(List<Item> itens) {
-        this.itens = itens;
-    }
-
-    /**
-     * Adiciona um produto à lista de itens da venda. Se o produto já existir,
-     * atualiza a quantidade.
-     * @param produto O produto a ser adicionado.
-     * @param quantidade A quantidade do produto.
-     */
+    // Método para adicionar produtos à lista de itens da venda
     public void adicionarProduto(Produto produto, int quantidade) {
-        for (Item item : this.itens) {
+        // A iteração agora será segura, pois 'this.itens' não será mais null
+        boolean found = false;
+        for (Item item : this.itens) { // <-- Linha 69 (provavelmente) onde a exceção ocorria
             if (item.getProduto().getIdProd() == produto.getIdProd()) {
                 item.setQtd(item.getQtd() + quantidade);
-                return;
+                found = true;
+                break;
             }
         }
-        // Se não encontrou o item existente, adiciona um novo
-        this.itens.add(new Item(produto, quantidade));
+        if (!found) {
+            this.itens.add(new Item(produto, quantidade));
+        }
     }
 
-    /**
-     * Classe interna que representa um item de venda (produto e quantidade).
-     */
+    // --- Classe Interna Item (se ainda não a tiver) ---
+    // (Mantida como estava, apenas para referência)
     public static class Item {
         private Produto produto;
         private int qtd;
