@@ -12,17 +12,17 @@ public class ProdutoDAO {
         this.connection = connection;
     }
 
-    // Método save unificado para inserção e atualização
+
     public void save(Produto produto, boolean atualizacao) throws SQLException {
         String sql;
-        PreparedStatement stmt = null; // Inicialize stmt fora do try-with-resources se for usar no finally
+        PreparedStatement stmt = null; 
         try {
             if (atualizacao){
                 sql = "UPDATE produto SET prod_nome = ?, prod_preco = ? WHERE id_prod = ?";
                 stmt = connection.prepareStatement(sql);
                 stmt.setString(1, produto.getNome());
                 stmt.setDouble(2, produto.getPreco());
-                stmt.setInt(3, produto.getIdProd()); // ID é o último parâmetro para UPDATE
+                stmt.setInt(3, produto.getIdProd()); 
             } else {
                 sql = "INSERT INTO produto (id_prod, prod_nome, prod_preco) VALUES (?, ?, ?)";
                 stmt = connection.prepareStatement(sql);
@@ -30,8 +30,8 @@ public class ProdutoDAO {
                 stmt.setString(2, produto.getNome());
                 stmt.setDouble(3, produto.getPreco());
             }
-            stmt.executeUpdate(); // Use executeUpdate para INSERT, UPDATE, DELETE
-        } finally { // Use finally para garantir que o stmt seja fechado
+            stmt.executeUpdate(); 
+        } finally {
             if (stmt != null) {
                 stmt.close();
             }
@@ -61,26 +61,26 @@ public class ProdutoDAO {
     }
     */
  
-    public boolean delete(int idProd) throws SQLException { // Mudei para boolean para indicar sucesso
+    public boolean delete(int idProd) throws SQLException { 
         String sql = "DELETE FROM produto WHERE id_prod=?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, idProd);
-            int affectedRows = stmt.executeUpdate(); // Use executeUpdate() para DELETE
-            return affectedRows > 0; // Retorna true se alguma linha foi afetada
+            int affectedRows = stmt.executeUpdate(); 
+            return affectedRows > 0; 
         }
     }
  
     // --- MÉTODO getById CORRIGIDO ---
     public Produto getById(int idProd) throws SQLException {
-        String sql = "SELECT id_prod, prod_nome, prod_preco FROM produto WHERE id_prod = ?"; // Colunas corretas
+        String sql = "SELECT id_prod, prod_nome, prod_preco FROM produto WHERE id_prod = ?"; 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, idProd); // <<< Definir o parâmetro ANTES de executar a query
-            try (ResultSet rs = stmt.executeQuery()) { // <<< Executar a query AQUI
+            stmt.setInt(1, idProd); 
+            try (ResultSet rs = stmt.executeQuery()) { 
                 if (rs.next()) {
                     return new Produto(
                         rs.getInt("id_prod"),
-                        rs.getString("prod_nome"), // Coluna correta
-                        rs.getDouble("prod_preco") // Coluna correta
+                        rs.getString("prod_nome"),
+                        rs.getDouble("prod_preco") 
                     );
                 }
             }
@@ -90,14 +90,14 @@ public class ProdutoDAO {
  
     public List<Produto> getAll() throws SQLException {
         List<Produto> produtos = new ArrayList<>();
-        String sql = "SELECT id_prod, prod_nome, prod_preco FROM produto"; // Colunas corretas
-        try (Statement stmt = connection.createStatement(); // Use Statement para queries sem parâmetros
+        String sql = "SELECT id_prod, prod_nome, prod_preco FROM produto"; 
+        try (Statement stmt = connection.createStatement(); 
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 Produto produto = new Produto(
                     rs.getInt("id_prod"),
-                    rs.getString("prod_nome"), // Coluna correta
-                    rs.getDouble("prod_preco") // Coluna correta
+                    rs.getString("prod_nome"),
+                    rs.getDouble("prod_preco") 
                 );
                 produtos.add(produto);
             }

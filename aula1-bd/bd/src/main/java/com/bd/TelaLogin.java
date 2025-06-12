@@ -15,7 +15,7 @@ public class TelaLogin extends JFrame {
   private JPasswordField campoID;
   private JButton botaoLogin;
   private Connection connection; 
-  private Operador operadorLogado; // ADICIONADO: Variável para armazenar o operador autenticado
+  private Operador operadorLogado;
 
   public TelaLogin() {
     setTitle("Login do Operador");
@@ -64,19 +64,13 @@ public class TelaLogin extends JFrame {
           OperadorDAO operadorDAO = new OperadorDAO(connection);
           Operador operadorParaLogin = new Operador(id, nome); 
           
-                    // AQUI está a MUDANÇA:
-                    // Você já está chamando operadorDAO.logar e armazenando o resultado em operadorAutenticado.
-                    // Não precisa chamar ele de novo no 'if' como se esperasse um boolean.
-                    // Apenas verifique se operadorAutenticado não é nulo.
           Operador operadorAutenticado = operadorDAO.logar(operadorParaLogin); 
 
-          // MUDANÇA AQUI: Altere a condição do 'if'
-          if (operadorAutenticado != null) { // Se logar retornou um objeto Operador (não nulo), login bem-sucedido
+          if (operadorAutenticado != null) { 
             JOptionPane.showMessageDialog(TelaLogin.this, "Login bem-sucedido!");
 
             dispose(); 
-            // MUDANÇA CRUCIAL AQUI: Passe o 'operadorAutenticado' para a TelaVenda
-            new TelaVenda(connection, operadorAutenticado); // Passando o operador autenticado
+            new TelaVenda(connection, operadorAutenticado);
 
           } else {
             JOptionPane.showMessageDialog(TelaLogin.this, "Nome de usuário ou ID inválidos.", "Erro de Login", JOptionPane.ERROR_MESSAGE);

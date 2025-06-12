@@ -13,32 +13,29 @@ public class TelaProduto extends JFrame {
     private JTable tabelaProdutos;
     private DefaultTableModel modeloTabelaProdutos;
     private ProdutoDAO produtoDAO;
-    private Connection connection; // Adicione esta conexão para passar para o ProdutoDAO
+    private Connection connection;
 
     public TelaProduto(Connection connection) {
-        this.connection = connection; // Armazena a conexão
-        this.produtoDAO = new ProdutoDAO(connection); // Inicializa o DAO com a conexão
+        this.connection = connection;
+        this.produtoDAO = new ProdutoDAO(connection); 
 
         setTitle("Gerenciar Produtos");
         setSize(800, 500);
-        setLocationRelativeTo(null); // Centraliza a janela
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE); // Fecha apenas esta janela, não o aplicativo
-
-        // --- Configuração da Tabela de Produtos ---
+        setLocationRelativeTo(null); 
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE); 
         String[] colunasProdutos = {"ID", "Nome do Produto", "Preço (R$)"};
         modeloTabelaProdutos = new DefaultTableModel(null, colunasProdutos) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Torna as células não editáveis diretamente na tabela
+                return false; 
             }
         };
         tabelaProdutos = new JTable(modeloTabelaProdutos);
-        tabelaProdutos.setAutoCreateRowSorter(true); // Permite ordenar a tabela
+        tabelaProdutos.setAutoCreateRowSorter(true);
         JScrollPane scrollPane = new JScrollPane(tabelaProdutos);
 
-        // --- Configuração dos Botões ---
         JPanel painelBotoes = new JPanel();
-        painelBotoes.setLayout(new GridLayout(4, 1, 10, 10)); // 4 linhas, 1 coluna, com espaçamento
+        painelBotoes.setLayout(new GridLayout(4, 1, 10, 10));
 
         JButton btnAdicionar = new JButton("Adicionar Produto");
         JButton btnAlterar = new JButton("Alterar Produto");
@@ -50,25 +47,24 @@ public class TelaProduto extends JFrame {
         painelBotoes.add(btnExcluir);
         painelBotoes.add(btnAtualizar);
 
-        // --- Layout da Janela ---
-        setLayout(new BorderLayout(10, 10)); // Espaçamento entre os componentes
+
+        setLayout(new BorderLayout(10, 10)); 
         add(scrollPane, BorderLayout.CENTER);
         add(painelBotoes, BorderLayout.EAST);
 
         // --- Ações dos Botões ---
-        btnAdicionar.addActionListener(e -> abrirDialogoProduto(null)); // null para adicionar novo
+        btnAdicionar.addActionListener(e -> abrirDialogoProduto(null)); 
         btnAlterar.addActionListener(e -> {
             int linhaSelecionada = tabelaProdutos.getSelectedRow();
             if (linhaSelecionada == -1) {
                 JOptionPane.showMessageDialog(this, "Selecione um produto para alterar.");
                 return;
             }
-            // Converte o índice da linha da visão para o índice do modelo, importante para ordenação
             int idProd = (int) modeloTabelaProdutos.getValueAt(tabelaProdutos.convertRowIndexToModel(linhaSelecionada), 0);
             try {
                 Produto produto = produtoDAO.getById(idProd);
                 if (produto != null) {
-                    abrirDialogoProduto(produto); // Passa o produto existente para o diálogo
+                    abrirDialogoProduto(produto); 
                 } else {
                     JOptionPane.showMessageDialog(this, "Produto não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
                 }
@@ -90,12 +86,11 @@ public class TelaProduto extends JFrame {
                 try {
                     if (produtoDAO.delete(idProd)) {
                         JOptionPane.showMessageDialog(this, "Produto excluído com sucesso.");
-                        atualizarTabelaProdutos(); // Atualiza a tabela após a exclusão
+                        atualizarTabelaProdutos(); 
                     } else {
                         JOptionPane.showMessageDialog(this, "Erro ao excluir produto. Pode haver vendas associadas.", "Erro", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (SQLException ex) {
-                    // Cuidado com exclusão de produtos que estão em vendas (FK constraint)
                     JOptionPane.showMessageDialog(this, "Erro de banco de dados ao excluir produto: " + ex.getMessage() + "\nVerifique se o produto está associado a alguma venda.", "Erro de SQL", JOptionPane.ERROR_MESSAGE);
                     ex.printStackTrace();
                 }
@@ -103,14 +98,13 @@ public class TelaProduto extends JFrame {
         });
         btnAtualizar.addActionListener(e -> atualizarTabelaProdutos());
 
-        // Carrega os produtos na tabela ao iniciar a tela
         atualizarTabelaProdutos();
     }
 
     private void atualizarTabelaProdutos() {
-        modeloTabelaProdutos.setRowCount(0); // Limpa todas as linhas existentes
+        modeloTabelaProdutos.setRowCount(0); 
         try {
-            List<Produto> produtos = produtoDAO.getAll(); // Método para obter todos os produtos
+            List<Produto> produtos = produtoDAO.getAll(); 
             for (Produto p : produtos) {
                 modeloTabelaProdutos.addRow(new Object[]{p.getIdProd(), p.getNome(), String.format("%.2f", p.getPreco())});
             }
@@ -125,14 +119,13 @@ public class TelaProduto extends JFrame {
         JTextField campoNome = new JTextField(20);
         JTextField campoPreco = new JTextField(10);
     
-        // Se estiver alterando, preenche os campos com os dados do produto existente
         if (produto != null) {
             campoId.setText(String.valueOf(produto.getIdProd()));
-            campoId.setEditable(false); // ID não pode ser alterado
+            campoId.setEditable(false); 
             campoNome.setText(produto.getNome());
             campoPreco.setText(String.format("%.2f", produto.getPreco()));
         } else {
-            campoId.setEditable(true); // ID pode ser editado para nova inserção
+            campoId.setEditable(true); 
         }
     
         JPanel painelDialogo = new JPanel(new GridLayout(0, 2, 5, 5));
@@ -151,7 +144,7 @@ public class TelaProduto extends JFrame {
             try {
                 int idProd = Integer.parseInt(campoId.getText());
                 String nome = campoNome.getText().trim();
-                double preco = Double.parseDouble(campoPreco.getText().replace(",", ".")); // Aceita ',' como separador decimal
+                double preco = Double.parseDouble(campoPreco.getText().replace(",", ".")); 
     
                 if (nome.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "Nome do produto não pode ser vazio.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -164,14 +157,14 @@ public class TelaProduto extends JFrame {
     
                 Produto novoOuAlteradoProd = new Produto(idProd, nome, preco);
     
-                if (produto == null) { // Adicionar
-                    produtoDAO.save(novoOuAlteradoProd, false); // false = não é atualização
+                if (produto == null) { 
+                    produtoDAO.save(novoOuAlteradoProd, false);
                     JOptionPane.showMessageDialog(this, "Produto adicionado com sucesso!");
-                } else { // Alterar
-                    produtoDAO.save(novoOuAlteradoProd, true); // true = é atualização
+                } else { 
+                    produtoDAO.save(novoOuAlteradoProd, true); 
                     JOptionPane.showMessageDialog(this, "Produto alterado com sucesso!");
                 }
-                atualizarTabelaProdutos(); // Atualiza a tabela após a operação
+                atualizarTabelaProdutos(); 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "ID ou Preço inválido. Certifique-se de usar números válidos.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
             } catch (SQLException ex) {
