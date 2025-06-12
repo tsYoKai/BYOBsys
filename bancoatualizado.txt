@@ -1,0 +1,33 @@
+CREATE DATABASE IF NOT EXISTS byobbd;
+USE byobbd;
+CREATE TABLE IF NOT EXISTS operador(
+id_operador INT PRIMARY KEY NOT NULL,
+op_nome VARCHAR(15)
+);
+CREATE TABLE IF NOT EXISTS venda(
+id_venda INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+cpf VARCHAR(20),
+id_operador INT,
+FOREIGN KEY (id_operador) REFERENCES operador(id_operador)
+);
+CREATE TABLE IF NOT EXISTS produto(
+id_prod INT PRIMARY KEY NOT NULL,
+prod_nome VARCHAR(15),
+prod_preco DOUBLE
+);
+CREATE TABLE IF NOT EXISTS item_venda(
+id_item INT PRIMARY KEY NOT NULL auto_increment,
+id_venda INT,
+id_prod INT,
+item_preco DOUBLE,
+item_qtd INT,
+FOREIGN KEY (id_venda) REFERENCES venda(id_venda),
+FOREIGN KEY (id_prod) REFERENCES produto(id_prod)
+);
+insert into operador values(951,"adm");
+update operador set id_operador=123456, op_nome="adm" where id_operador =951;
+select * from operador;
+insert into produto values(5421,"prego",5.6),(21,"martelo",15.99);
+select * from venda
+
+
