@@ -29,7 +29,7 @@ public class TelaVenda extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         vendaDAO = new VendaDAO(connection);
-        produtoDAO = new ProdutoDAO(connection); // Inicializa ProdutoDAO
+        produtoDAO = new ProdutoDAO(connection); 
 
         String[] colunasVendas = {"ID Venda", "CPF Cliente", "ID Operador", "Nome Operador", "Total Venda (R$)"};
 
@@ -62,11 +62,8 @@ public class TelaVenda extends JFrame {
         setLayout(new BorderLayout(10, 10));
         add(scroll, BorderLayout.CENTER);
         add(painelBotoes, BorderLayout.EAST);
-
         atualizarTabelaVendas();
-
         botaoAdicionar.addActionListener(e -> abrirDialogoNovaVenda());
-
         botaoDetalhes.addActionListener(e -> {
             int linhaSelecionada = tabelaVendas.getSelectedRow();
             if (linhaSelecionada == -1) {
@@ -100,22 +97,17 @@ public class TelaVenda extends JFrame {
                 }
             }
         });
-
         botaoAtualizar.addActionListener(e -> atualizarTabelaVendas());
-
         botaoProdutos.addActionListener(e -> {
             TelaProduto telaProduto = new TelaProduto(connection);
             telaProduto.setVisible(true);
         });
-
         setVisible(true);
     }
-
     private void atualizarTabelaVendas() {
         try {
             List<Venda> vendas = vendaDAO.listarTodas();
             modeloTabelaVendas.setRowCount(0); // limpa linhas
-
             for (Venda venda : vendas) {
                 double totalVenda = 0.0;
                 if (venda.getItens() != null) {
@@ -125,7 +117,6 @@ public class TelaVenda extends JFrame {
                         }
                     }
                 }
-
                 Object[] linha = {
                     venda.getIdVenda(),
                     venda.getCpf(),
@@ -140,7 +131,6 @@ public class TelaVenda extends JFrame {
             e.printStackTrace();
         }
     }
-
     private void exibirDetalhesVenda(int idVenda) {
         try {
             Venda venda = vendaDAO.buscarPorId(idVenda);
@@ -148,7 +138,6 @@ public class TelaVenda extends JFrame {
                 JOptionPane.showMessageDialog(this, "Venda não encontrada.", "Detalhes da Venda", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
             StringBuilder detalhes = new StringBuilder();
             detalhes.append("ID da Venda: ").append(venda.getIdVenda()).append("\n");
             detalhes.append("CPF do Cliente: ").append(venda.getCpf()).append("\n");
@@ -201,25 +190,21 @@ public class TelaVenda extends JFrame {
     private void abrirDialogoNovaVenda() {
         JTextField campoCpf = new JTextField(15);
 
-        // --- Componentes para adicionar produtos (AGORA POR ID) ---
         JTextField campoIdProduto = new JTextField(10); // Campo para digitar o ID do produto
         JButton btnBuscarProduto = new JButton("Buscar Produto"); // Botão para buscar o produto
         JLabel labelNomeProduto = new JLabel("Nome: "); // Exibe o nome do produto encontrado
         JLabel labelPrecoProduto = new JLabel("Preço: "); // Exibe o preço do produto encontrado
         
-        // Variável temporária para armazenar o produto selecionado/encontrado
         final Produto[] produtoEncontrado = {null}; // Array para permitir modificação dentro do lambda
 
         JTextField campoQuantidade = new JTextField("1", 5); // Default 1
         JButton btnAdicionarItem = new JButton("Adicionar Produto à Venda");
 
-        // Modelo para a tabela de itens que serão adicionados à venda
         DefaultTableModel modeloItensVendaEmConstrucao = new DefaultTableModel(new Object[]{"ID", "Produto", "Qtd", "Preço Unit.", "Subtotal"}, 0);
         JTable tabelaItensVendaEmConstrucao = new JTable(modeloItensVendaEmConstrucao);
         JScrollPane scrollItens = new JScrollPane(tabelaItensVendaEmConstrucao);
         scrollItens.setPreferredSize(new Dimension(450, 150));
 
-        // Painel principal do diálogo de nova venda
         JPanel painelNovaVenda = new JPanel(new BorderLayout(10, 10));
         JPanel painelInfoVenda = new JPanel(new GridLayout(0, 2, 5, 5));
         painelInfoVenda.setBorder(BorderFactory.createTitledBorder("Informações da Venda"));
@@ -228,12 +213,10 @@ public class TelaVenda extends JFrame {
         painelInfoVenda.add(campoCpf);
         painelInfoVenda.add(new JLabel("Operador da Venda:"));
         painelInfoVenda.add(new JLabel(operadorLogado.getNome() + " (ID: " + operadorLogado.getIdOp() + ")"));
-
-        // Painel para adicionar produto por ID
-        JPanel painelAdicionarProduto = new JPanel(new GridBagLayout()); // Usando GridBagLayout para maior controle
+        JPanel painelAdicionarProduto = new JPanel(new GridBagLayout()); 
         painelAdicionarProduto.setBorder(BorderFactory.createTitledBorder("Adicionar Itens"));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5); // Padding
+        gbc.insets = new Insets(5, 5, 5, 5); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         gbc.gridx = 0; gbc.gridy = 0;
@@ -255,28 +238,24 @@ public class TelaVenda extends JFrame {
         gbc.gridx = 2; gbc.gridy = 3; gbc.weightx = 0;
         painelAdicionarProduto.add(btnAdicionarItem, gbc);
 
-
-        // Adiciona os painéis ao diálogo principal
         painelNovaVenda.add(painelInfoVenda, BorderLayout.NORTH);
         painelNovaVenda.add(painelAdicionarProduto, BorderLayout.CENTER);
-        painelNovaVenda.add(scrollItens, BorderLayout.SOUTH); // Tabela de itens
+        painelNovaVenda.add(scrollItens, BorderLayout.SOUTH);
 
-        // Crie um objeto Venda temporário para armazenar os itens antes de salvar
         Venda novaVendaEmConstrucao = new Venda();
-        novaVendaEmConstrucao.setOperador(operadorLogado); // Atribui o operador desde já
+        novaVendaEmConstrucao.setOperador(operadorLogado); 
 
-        // --- AÇÃO DO BOTÃO BUSCAR PRODUTO ---
         btnBuscarProduto.addActionListener(e -> {
-            produtoEncontrado[0] = null; // Reseta o produto encontrado
+            produtoEncontrado[0] = null; 
             labelNomeProduto.setText("Nome: ");
             labelPrecoProduto.setText("Preço: ");
 
             try {
                 int idBusca = Integer.parseInt(campoIdProduto.getText());
-                Produto p = produtoDAO.getById(idBusca); // Busca o produto pelo ID
+                Produto p = produtoDAO.getById(idBusca); 
 
                 if (p != null) {
-                    produtoEncontrado[0] = p; // Armazena o produto encontrado
+                    produtoEncontrado[0] = p; 
                     labelNomeProduto.setText("Nome: " + p.getNome());
                     labelPrecoProduto.setText("Preço: R$ " + String.format("%.2f", p.getPreco()));
                 } else {
@@ -290,9 +269,8 @@ public class TelaVenda extends JFrame {
             }
         });
 
-        // --- AÇÃO DO BOTÃO ADICIONAR ITEM ---
         btnAdicionarItem.addActionListener(e -> {
-            // Usa o produto que foi encontrado pela busca
+
             Produto produtoSelecionado = produtoEncontrado[0]; 
 
             if (produtoSelecionado == null) {
@@ -312,18 +290,15 @@ public class TelaVenda extends JFrame {
                 return;
             }
 
-            // Verifica se o produto já está na lista e atualiza a quantidade
             boolean itemExistente = false;
             for (int i = 0; i < modeloItensVendaEmConstrucao.getRowCount(); i++) {
                 int idProdutoNaTabela = (int) modeloItensVendaEmConstrucao.getValueAt(i, 0); 
                 if (idProdutoNaTabela == produtoSelecionado.getIdProd()) {
                     int qtdAtual = (int) modeloItensVendaEmConstrucao.getValueAt(i, 2);
-                    modeloItensVendaEmConstrucao.setValueAt(qtdAtual + quantidade, i, 2); // Atualiza a quantidade
+                    modeloItensVendaEmConstrucao.setValueAt(qtdAtual + quantidade, i, 2); 
                     modeloItensVendaEmConstrucao.setValueAt(
                         String.format("%.2f", (qtdAtual + quantidade) * produtoSelecionado.getPreco()), i, 4
-                    ); // Atualiza o subtotal
-                    
-                    // Também atualiza o item dentro do objeto Venda
+                    ); 
                     for (Venda.Item item : novaVendaEmConstrucao.getItens()) {
                         if (item.getProduto().getIdProd() == produtoSelecionado.getIdProd()) {
                             item.setQtd(item.getQtd() + quantidade);
@@ -337,7 +312,7 @@ public class TelaVenda extends JFrame {
 
             if (!itemExistente) {
                 modeloItensVendaEmConstrucao.addRow(new Object[]{
-                produtoSelecionado.getIdProd(), // ID do produto
+                produtoSelecionado.getIdProd(),
                 produtoSelecionado.getNome(),
                 quantidade,
                 String.format("%.2f", produtoSelecionado.getPreco()),
@@ -346,16 +321,12 @@ public class TelaVenda extends JFrame {
             
                 novaVendaEmConstrucao.adicionarProduto(produtoSelecionado, quantidade); 
             }
-            campoQuantidade.setText("1"); // Resetar campo de quantidade
-            // Limpa o campo de ID e as labels do produto para a próxima adição
+            campoQuantidade.setText("1"); 
             campoIdProduto.setText("");
             labelNomeProduto.setText("Nome: ");
             labelPrecoProduto.setText("Preço: ");
-            produtoEncontrado[0] = null; // Limpa o produto encontrado
+            produtoEncontrado[0] = null; 
         });
-
-
-        // Exibir o diálogo
         int option = JOptionPane.showConfirmDialog(this, painelNovaVenda, "Registrar Nova Venda", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (option == JOptionPane.OK_OPTION) {
@@ -363,13 +334,12 @@ public class TelaVenda extends JFrame {
             if (cpf.isEmpty()) {
                 cpf = null;
             }
-            novaVendaEmConstrucao.setCpf(cpf); // Define o CPF na venda em construção
+            novaVendaEmConstrucao.setCpf(cpf); 
 
             if (novaVendaEmConstrucao.getItens().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "A venda deve conter pelo menos um item.", "Erro", JOptionPane.ERROR_MESSAGE);
-                return; // Impede a gravação se não houver itens
+                return; 
             }
-
             try {
                 int idVendaGerada = vendaDAO.inserir(novaVendaEmConstrucao);
                 JOptionPane.showMessageDialog(this, "Venda registrada com sucesso! ID: " + idVendaGerada);
