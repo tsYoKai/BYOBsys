@@ -65,7 +65,7 @@ public class ConnectionFactory {
                                         ")");
                     System.out.println("Inserindo operador 'adm'...");
                     bdStmt.executeUpdate("INSERT INTO operador (id_operador, op_nome) VALUES (123, 'adm')");
-                    System.out.println("Tabela 'operador' criada e 'adm' inserido.");
+                    System.out.println("Tabela 'operador' criada.");
                 } else {
                     System.out.println("Tabela 'operador' já existe.");
                 }
@@ -103,14 +103,14 @@ public class ConnectionFactory {
                                         "FOREIGN KEY (id_venda) REFERENCES venda(id_venda) ON DELETE CASCADE," + 
                                         "FOREIGN KEY (id_prod) REFERENCES produto(id_prod)" +
                                         ")");
-                    System.out.println("Tabela 'item_venda' criada com ON DELETE CASCADE.");
+                    System.out.println("Tabela 'item_venda' criada.");
                 } else {
                     System.out.println("Tabela 'item_venda' já existe.");
                 }
 
             } 
         } catch (SQLException e) {
-            System.err.println("Erro na inicialização do esquema do banco de dados: " + e.getMessage());
+            System.err.println("Erro na inicialização do banco de dados: " + e.getMessage());
             e.printStackTrace();
         }
     }
